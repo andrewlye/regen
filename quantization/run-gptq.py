@@ -6,15 +6,14 @@ import argparse
 import json
 
 parser = argparse.ArgumentParser(description='GPTQ Quantization')
-parser.add_argument('--model-name', default="meta-llama/Llama-2-13b-chat-hf", help='model_name')
-parser.add_argument('--cache-dir', default="/home/aly37/.cache", help='cache dir')
-parser.add_argument('--save-dir', default="/mnt/vstor/CSE_CSDS_VXC204/aly37/quantize-hal-project/quant-models", help='save dir')
+parser.add_argument('--model', default="meta-llama/Llama-2-13b-chat-hf", help='model_name')
+parser.add_argument('--save', default="/quant-models", help='save dir')
 parser.add_argument('--bits', type=int, required=True, help='bits')
 parser.add_argument('--token', default='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')
 args = parser.parse_args()
 print(args)
 
-save_folder = f'{args.save_dir}/gptq/Llama-2-13b-chat-hf'
+save_folder = f'{args.save}/gptq/Llama-2-13b-chat-hf'
 
 model_name = args.model_name
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
