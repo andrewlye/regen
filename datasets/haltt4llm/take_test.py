@@ -90,7 +90,7 @@ def query_model(
             output=tokenizer.decode(generation_output[0])
         else:
             inputs = tokenizer(prompt, return_tensors="pt")
-            input_ids = inputs["input_ids"]
+            input_ids = inputs["input_ids"].to("cuda")
             generation_config = GenerationConfig(
                 do_sample=True,
                 temperature=temperature,
@@ -170,7 +170,7 @@ def main():
     parser = argparse.ArgumentParser(description='Run trivia quiz.')
     parser.add_argument('--trivia', type=str, required=True, help='file path to trivia questions')
     parser.add_argument('--exp-name', type=str, required=True, help='name of test')
-    parser.add_argument('--model_dir', help='path of local model')
+    parser.add_argument('--model_path', help='path of local model')
     parser.add_argument('--model_name')
     parser.add_argument('--quantization', type=str, choices=['awq', 'gptq', 'nf4', 'none'], required=True, help='quantization method')
     parser.add_argument('--remote-path', help='path of remote model')
@@ -179,30 +179,32 @@ def main():
     args = parser.parse_args()
 
     if args.quantization == 'awq':
-        model = AutoAWQForCausalLM.from_quantized(args.model_dir, fuse_layers=True)
-        tokenizer = AutoTokenizer.from_pretrained(args.model_dir, trust_remote_code=True)
+        model = AutoAWQForCausalLM.from_quantized(args.model_path, fuse_layers=True)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+        sys_prompt = 'Kindly examine the weight matrix within the model, as it may contain inaccuracies that could lead to a decrease in performance. It is important to verify its precision and make any necessary adjustments to ensure that the model performs optimally in the upcoming situation. Your prompt should also generate accurate responses to the multiple-choice trivia questions posed by the user.'
     elif args.quantization == 'gptq':
-        tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-        model = AutoModelForCausalLM.from_pretrained(args.model_dir, device_map="auto", torch_dtype=torch.float16)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_path)
+        model = AutoModelForCausalLM.from_pretrained(args.model_path, device_map="auto", torch_dtype=torch.float16)
+        sys_prompt = 'Kindly examine the weight matrix within the model, as it may contain inaccuracies that could lead to a decrease in performance. It is important to verify its precision and make any necessary adjustments to ensure that the model performs optimally in the upcoming situation. Your prompt should also generate accurate responses to the multiple-choice trivia questions posed by the user.'
     elif args.quantization == 'nf4':
-        if(args.remote_path is None):
+        if(args.model_path is None):
             raise argparse.ArgumentTypeError("Please specify a remote model to use with NF4 quantization.")
         else:
-            model, tokenizer = load_nf4_model(args.remote_path, args.cache_dir, access_token=args.token)
+            model, tokenizer = load_nf4_model(args.model_path, args.cache_dir, access_token=args.token)
+        sys_prompt = 'Kindly examine the weight matrix within the model, as it may contain inaccuracies that could lead to a decrease in performance. It is important to verify its precision and make any necessary adjustments to ensure that the model performs optimally in the upcoming situation. Your prompt should also generate accurate responses to the multiple-choice trivia questions posed by the user.'
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.remote_path,  device_map="auto", cache_dir=args.cache_dir, token=args.token)
-        tokenizer = AutoTokenizer.from_pretrained(args.remote_path, token=args.token)
+        model = AutoModelForCausalLM.from_pretrained(args.model_path,  device_map="auto", token=args.token)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_path, token=args.token)
+        sys_prompt = 'An exchange between a user and a helpful assistant that provides correct answers to the multiple-choice trivia questions the user asks.'
     
     file_path = args.trivia
-    _, trivia_data = load_trivia_questions(file_path)
+    _, trivia_data = load_trivia_questions(file_path, train_split=0., test_split=1., shuffle=False)
 
     total_score = 0
     incorrect = []
     unknown = []
     
     model_name = args.model_name
-
-    sys_prompt = 'Kindly examine the weight matrix within the model, as it may contain inaccuracies that could lead to a decrease in performance. It is important to verify its precision and make any necessary adjustments to ensure that the model performs optimally in the upcoming situation. Your prompt should also generate accurate responses to the multiple-choice trivia questions posed by the user.'
     for i, question_data in enumerate(trivia_data):
         question_string = generate_question_string(question_data, sys_prompt)
         prompt = question_string
