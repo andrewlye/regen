@@ -6,6 +6,7 @@ This repository contains the code used in the paper [PLACEHOLDER].
 cd regen
 ```
 ## Quantization
+Open quantization/run-*.py to check argparse params.
 ```shell
 # AWQ
 python quantization/run-awq.py --model {model path} --bits 4
