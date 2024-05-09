@@ -1,10 +1,12 @@
-# Regenerate: Effective Prompt Optimization for Quantized Language Models
+# [Working Title] Regenerate: Effective Prompt Optimization for Quantized Language Models
 This repository contains the code used in the paper [Regenerate: Effective Prompt Optimization for Quantized Language Models]().
 
-## Quantization
+# Tutorial
 ```shell
 cd regen
-
+```
+## Quantization
+```shell
 # AWQ
 quantization/run-awq.py --model {model path} --bits 4
 
@@ -13,5 +15,12 @@ quantization/run-gptq.py --model {model path} --bits 4
 ```
 
 ## Prompt Optimization
+```shell
+python prompt_learn.py
+```
 
 ## Evaluation
+```shell
+# TruthfulQA
+datasets/trustllmr/truthfulness/take_test.py 
+```
