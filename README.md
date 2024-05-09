@@ -8,10 +8,10 @@ cd regen
 ## Quantization
 ```shell
 # AWQ
-quantization/run-awq.py --model {model path} --bits 4
+python quantization/run-awq.py --model {model path} --bits 4
 
 # GPTQ
-quantization/run-gptq.py --model {model path} --bits 4
+python quantization/run-gptq.py --model {model path} --bits 4
 ```
 
 ## Prompt Optimization
@@ -22,5 +22,5 @@ python prompt_learn.py
 ## Evaluation
 ```shell
 # TruthfulQA
-datasets/trustllmr/truthfulness/take_test.py 
+python datasets/trustllm/truthfulness/take_test.py 
 ```
