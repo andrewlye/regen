@@ -47,7 +47,8 @@ def gen(prompt: str, model, tokenizer):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--iters', type=int, required=True, default=15)
-parser.add_argument('--o', type=str, required=True, default='output.txt')
+parser.add_argument('--o', type=str, required=True, default='/mnt/vstor/CSE_CSDS_VXC204/aly37/regen')
+parser.add_argument('--n', type=str, required=True, default='output.txt')
 args = parser.parse_args()
 
 model = AutoModelForCausalLM.from_pretrained('microsoft/Phi-3-mini-128k-instruct', trust_remote_code=True, device_map='auto')
@@ -89,7 +90,7 @@ for i in range(NUM_ITERS):
     delta_time = delta_time / 3600
 
     print("Writing results...")
-    with open(f"/mnt/vstor/CSE_CSDS_VXC204/aly37/regen/{args.o}", "w") as f:
+    with open(f"{args.o}/{args.n}", "w") as f:
         f.write(f"time elapsed: {delta_time:2f} hours\n")
         f.write(f"best acc.: {max(accuracies)} from iter {np.argmax(accuracies)}\n\n")
         for iter, tup in enumerate(zip(prompt_log, gen_instructs, accuracies)):
