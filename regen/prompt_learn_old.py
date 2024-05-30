@@ -1,4 +1,4 @@
-from datasets.haltt4llm.take_test import train
+from benchmarks.haltt4llm.take_test import train
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
 

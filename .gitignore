@@ -1,4 +1,6 @@
 .DS_Store
 quant-models/
-notebooks/
+*.ipynb
 datasets/results
+__pycache__/
+*.txt
